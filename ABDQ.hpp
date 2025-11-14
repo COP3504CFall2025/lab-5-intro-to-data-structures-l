@@ -25,20 +25,14 @@ private:
     }
 
 public:
-    // Big Five
-    ABDQ(std::size_t capacity = 4)
-        : data_(new T[capacity > 0 ? capacity : 4]),
-          capacity_(capacity > 0 ? capacity : 4),
-          size_(0), front_(0), back_(0) {}
+    ABDQ(std::size_t capacity = 1)
+        : data_(new T[capacity]), capacity_(capacity), size_(0), front_(0), back_(0) {}
 
     ~ABDQ() { delete[] data_; }
 
+    // Big Five
     ABDQ(const ABDQ& other)
-        : data_(new T[other.capacity_]),
-          capacity_(other.capacity_),
-          size_(other.size_),
-          front_(0),
-          back_(other.size_)
+        : data_(new T[other.capacity_]), capacity_(other.capacity_), size_(other.size_), front_(0), back_(other.size_)
     {
         for (std::size_t i = 0; i < size_; ++i)
             data_[i] = other.data_[(other.front_ + i) % other.capacity_];
@@ -58,12 +52,10 @@ public:
     }
 
     ABDQ(ABDQ&& other) noexcept
-        : data_(other.data_), capacity_(other.capacity_), size_(other.size_),
-          front_(other.front_), back_(other.back_)
+        : data_(other.data_), capacity_(other.capacity_), size_(other.size_), front_(other.front_), back_(other.back_)
     {
         other.data_ = nullptr;
-        other.size_ = 0;
-        other.capacity_ = 0;
+        other.capacity_ = other.size_ = 0;
         other.front_ = other.back_ = 0;
     }
 
@@ -76,7 +68,7 @@ public:
         front_ = other.front_;
         back_ = other.back_;
         other.data_ = nullptr;
-        other.size_ = other.capacity_ = 0;
+        other.capacity_ = other.size_ = 0;
         other.front_ = other.back_ = 0;
         return *this;
     }
@@ -84,7 +76,7 @@ public:
     // Interface methods
     void pushFront(const T& item) override {
         ensureCapacity();
-        front_ = (front_ == 0) ? capacity_ - 1 : front_ - 1;
+        front_ = (front_ + capacity_ - 1) % capacity_;
         data_[front_] = item;
         ++size_;
     }
@@ -104,7 +96,7 @@ public:
 
     void popBack() override {
         if (isEmpty()) throw std::runtime_error("Deque is empty");
-        back_ = (back_ == 0) ? capacity_ - 1 : back_ - 1;
+        back_ = (back_ + capacity_ - 1) % capacity_;
         --size_;
     }
 
@@ -115,10 +107,10 @@ public:
 
     T& back() override {
         if (isEmpty()) throw std::runtime_error("Deque is empty");
-        return data_[(back_ == 0 ? capacity_ : back_) - 1];
+        return data_[(back_ + capacity_ - 1) % capacity_];
     }
 
-    bool isEmpty() const override { return size_ == 0; }
-
-    std::size_t getSize() const noexcept override { return size_; }
+    bool isEmpty() const override {
+        return size_ == 0;
+    }
 };
