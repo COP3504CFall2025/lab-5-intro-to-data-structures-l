@@ -198,7 +198,12 @@ void LinkedList<T>::Clear() {
         removeHead();
 }
 
-
+explicit ABDQ(std::size_t capacity)
+    : data_(new T[capacity > 0 ? capacity : 1]),
+      capacity_(capacity > 0 ? capacity : 1),
+      size_(0),
+      front_(0),
+      back_(0) {}
 template <typename T>
 LinkedList<T>& LinkedList<T>::operator=(LinkedList<T>&& other) noexcept {
     if (this == &other) return *this;
