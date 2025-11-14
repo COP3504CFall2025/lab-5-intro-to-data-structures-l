@@ -1,7 +1,6 @@
 #pragma once
-#include <cstddef>
-#include <stdexcept>
 #include "Interfaces.hpp"
+#include <stdexcept>
 
 template <typename T>
 class ABDQ : public DequeInterface<T> {
@@ -14,29 +13,10 @@ private:
 
     void ensureCapacity() {
         if (size_ < capacity_) return;
-
         std::size_t newCapacity = capacity_ * 2;
         T* newData = new T[newCapacity];
-
         for (std::size_t i = 0; i < size_; ++i)
             newData[i] = data_[(front_ + i) % capacity_];
-
-        delete[] data_;
-        data_ = newData;
-        capacity_ = newCapacity;
-        front_ = 0;
-        back_ = size_;
-    }
-
-    void shrinkIfNeeded() {
-        if (capacity_ <= 4 || size_ * 4 >= capacity_) return;
-
-        std::size_t newCapacity = capacity_ / 2;
-        T* newData = new T[newCapacity];
-
-        for (std::size_t i = 0; i < size_; ++i)
-            newData[i] = data_[(front_ + i) % capacity_];
-
         delete[] data_;
         data_ = newData;
         capacity_ = newCapacity;
@@ -45,74 +25,63 @@ private:
     }
 
 public:
-
-    ABDQ() : capacity_(4), size_(0), front_(0), back_(0) {
-        data_ = new T[capacity_];
-    }
-
-
-    ABDQ(std::size_t capacity) : capacity_(capacity), size_(0), front_(0), back_(0) {
-        data_ = new T[capacity_];
-    }
-
+    // Big Five
+    ABDQ(std::size_t capacity = 4)
+        : data_(new T[capacity > 0 ? capacity : 4]),
+          capacity_(capacity > 0 ? capacity : 4),
+          size_(0), front_(0), back_(0) {}
 
     ~ABDQ() { delete[] data_; }
 
-
     ABDQ(const ABDQ& other)
-        : capacity_(other.capacity_), size_(other.size_), front_(0), back_(other.size_) {
-        data_ = new T[capacity_];
+        : data_(new T[other.capacity_]),
+          capacity_(other.capacity_),
+          size_(other.size_),
+          front_(0),
+          back_(other.size_)
+    {
         for (std::size_t i = 0; i < size_; ++i)
             data_[i] = other.data_[(other.front_ + i) % other.capacity_];
     }
 
     ABDQ& operator=(const ABDQ& other) {
         if (this == &other) return *this;
-
         delete[] data_;
+        data_ = new T[other.capacity_];
         capacity_ = other.capacity_;
         size_ = other.size_;
         front_ = 0;
         back_ = size_;
-        data_ = new T[capacity_];
         for (std::size_t i = 0; i < size_; ++i)
             data_[i] = other.data_[(other.front_ + i) % other.capacity_];
-
         return *this;
     }
 
-
     ABDQ(ABDQ&& other) noexcept
         : data_(other.data_), capacity_(other.capacity_), size_(other.size_),
-          front_(other.front_), back_(other.back_) {
+          front_(other.front_), back_(other.back_)
+    {
         other.data_ = nullptr;
         other.size_ = 0;
         other.capacity_ = 0;
-        other.front_ = 0;
-        other.back_ = 0;
+        other.front_ = other.back_ = 0;
     }
-
 
     ABDQ& operator=(ABDQ&& other) noexcept {
         if (this == &other) return *this;
-
         delete[] data_;
         data_ = other.data_;
         capacity_ = other.capacity_;
         size_ = other.size_;
         front_ = other.front_;
         back_ = other.back_;
-
         other.data_ = nullptr;
-        other.size_ = 0;
-        other.capacity_ = 0;
-        other.front_ = 0;
-        other.back_ = 0;
-
+        other.size_ = other.capacity_ = 0;
+        other.front_ = other.back_ = 0;
         return *this;
     }
 
-
+    // Interface methods
     void pushFront(const T& item) override {
         ensureCapacity();
         front_ = (front_ == 0) ? capacity_ - 1 : front_ - 1;
@@ -127,35 +96,29 @@ public:
         ++size_;
     }
 
-    T popFront() override {
-        if (size_ == 0) throw std::out_of_range("Deque is empty");
-        T value = data_[front_];
+    void popFront() override {
+        if (isEmpty()) throw std::runtime_error("Deque is empty");
         front_ = (front_ + 1) % capacity_;
         --size_;
-        shrinkIfNeeded();
-        return value;
     }
 
-    T popBack() override {
-        if (size_ == 0) throw std::out_of_range("Deque is empty");
+    void popBack() override {
+        if (isEmpty()) throw std::runtime_error("Deque is empty");
         back_ = (back_ == 0) ? capacity_ - 1 : back_ - 1;
-        T value = data_[back_];
         --size_;
-        shrinkIfNeeded();
-        return value;
     }
 
-    const T& front() const override {
-        if (size_ == 0) throw std::out_of_range("Deque is empty");
+    T& front() override {
+        if (isEmpty()) throw std::runtime_error("Deque is empty");
         return data_[front_];
     }
 
-    const T& back() const override {
-        if (size_ == 0) throw std::out_of_range("Deque is empty");
-        return data_[(back_ == 0) ? capacity_ - 1 : back_ - 1];
+    T& back() override {
+        if (isEmpty()) throw std::runtime_error("Deque is empty");
+        return data_[(back_ == 0 ? capacity_ : back_) - 1];
     }
 
-    std::size_t getSize() const noexcept override {
-        return size_;
-    }
+    bool isEmpty() const override { return size_ == 0; }
+
+    std::size_t getSize() const noexcept override { return size_; }
 };
