@@ -1,129 +1,87 @@
 #pragma once
 
+#include "Interfaces.hpp"
 #include <cstddef>
 #include <stdexcept>
-#include "Interfaces.hpp"
 
-
-using std::size_t;
-
-template<typename T>
+template <typename T>
 class ABS : public StackInterface<T> {
-public:
-
-    ABS();
-    explicit ABS(const size_t capacity);
-    ABS(const ABS& other);
-    ABS& operator=(const ABS& rhs);
-    ABS(ABS&& other) noexcept;
-    ABS& operator=(ABS&& rhs) noexcept;
-    ~ABS() noexcept override;
-
-
-    [[nodiscard]] size_t getSize() const noexcept override;
-
-    [[nodiscard]] size_t getMaxCapacity() const noexcept;
-
-    [[nodiscard]] T* getData() const noexcept;
-
-
-    void push(const T& data) override;
-
-    T peek() const override;
-
-    T pop() override;
-
 private:
-    size_t capacity_;
-    size_t curr_size_;
     T* array_;
-    static constexpr size_t scale_factor_ = 2;
+    std::size_t capacity_;
+    std::size_t size_;
+    static constexpr std::size_t SCALE_FACTOR = 2;
+
+    void resize() {
+        std::size_t new_capacity = capacity_ * SCALE_FACTOR;
+        T* new_array = new T[new_capacity];
+        for (std::size_t i = 0; i < size_; ++i) {
+            new_array[i] = array_[i];
+        }
+        delete[] array_;
+        array_ = new_array;
+        capacity_ = new_capacity;
+    }
+
+public:
+    ABS() : array_(new T[1]), capacity_(1), size_(0) {}
+    explicit ABS(std::size_t capacity) : array_(new T[capacity > 0 ? capacity : 1]),
+        capacity_(capacity > 0 ? capacity : 1), size_(0) {}
+    ABS(const ABS& other) : array_(new T[other.capacity_]), capacity_(other.capacity_), size_(other.size_) {
+        for (std::size_t i = 0; i < size_; ++i) {
+            array_[i] = other.array_[i];
+        }
+    }
+    ABS(ABS&& other) noexcept : array_(other.array_), capacity_(other.capacity_), size_(other.size_) {
+        other.array_ = nullptr;
+        other.capacity_ = 0;
+        other.size_ = 0;
+    }
+    ABS& operator=(const ABS& other) {
+        if (this != &other) {
+            delete[] array_;
+            capacity_ = other.capacity_;
+            size_ = other.size_;
+            array_ = new T[capacity_];
+            for (std::size_t i = 0; i < size_; ++i) {
+                array_[i] = other.array_[i];
+            }
+        }
+        return *this;
+    }
+    ABS& operator=(ABS&& other) noexcept {
+        if (this != &other) {
+            delete[] array_;
+            array_ = other.array_;
+            capacity_ = other.capacity_;
+            size_ = other.size_;
+            other.array_ = nullptr;
+            other.capacity_ = 0;
+            other.size_ = 0;
+        }
+        return *this;
+    }
+    ~ABS() override {
+        delete[] array_;
+    }
+
+    void push(const T& item) override {
+        if (size_ >= capacity_) resize();
+        array_[size_++] = item;
+    }
+
+    T pop() override {
+        if (size_ == 0) throw std::runtime_error("Stack is empty");
+        --size_;
+        return array_[size_];
+    }
+
+    T peek() const override {
+        if (size_ == 0) throw std::runtime_error("Stack is empty");
+        return array_[size_ - 1];
+    }
+
+    std::size_t getSize() const noexcept override {
+        return size_;
+    }
 };
-
-template<typename T>
-ABS<T>::ABS() : capacity_(1), curr_size_(0), array_(new T[capacity_]) {}
-
-template<typename T>
-ABS<T>::ABS(const size_t capacity)
-    : capacity_(capacity > 0 ? capacity : 1), curr_size_(0), array_(new T[capacity_]) {}
-
-template<typename T>
-ABS<T>::ABS(const ABS& other)
-    : capacity_(other.capacity_), curr_size_(other.curr_size_), array_(new T[other.capacity_]) {
-    std::copy(other.array_, other.array_ + other.curr_size_, array_);
-}
-
-template<typename T>
-ABS<T>& ABS<T>::operator=(const ABS& rhs) {
-    if (this == &rhs) return *this;
-    T* newArray = new T[rhs.capacity_];
-    std::copy(rhs.array_, rhs.array_ + rhs.curr_size_, newArray);
-    delete[] array_;
-    array_ = newArray;
-    capacity_ = rhs.capacity_;
-    curr_size_ = rhs.curr_size_;
-    return *this;
-}
-
-template<typename T>
-ABS<T>::ABS(ABS&& other) noexcept
-    : capacity_(other.capacity_), curr_size_(other.curr_size_), array_(other.array_) {
-    other.array_ = nullptr;
-    other.capacity_ = 0;
-    other.curr_size_ = 0;
-}
-
-template<typename T>
-ABS<T>& ABS<T>::operator=(ABS&& rhs) noexcept {
-    if (this == &rhs) return *this;
-    delete[] array_;
-    array_ = rhs.array_;
-    capacity_ = rhs.capacity_;
-    curr_size_ = rhs.curr_size_;
-    rhs.array_ = nullptr;
-    rhs.capacity_ = 0;
-    rhs.curr_size_ = 0;
-    return *this;
-}
-
-template<typename T>
-ABS<T>::~ABS() noexcept override {
-    delete[] array_;
-}
-
-template<typename T>
-size_t ABS<T>::getSize() const noexcept { return curr_size_; }
-
-template<typename T>
-void ABS<T>::push(const T& data) {
-    if (curr_size_ >= capacity_) resize();
-    array_[curr_size_++] = data;
-}
-
-template<typename T>
-T ABS<T>::pop() {
-    if (curr_size_ == 0) throw std::out_of_range("Stack is empty");
-    return array_[--curr_size_];
-}
-
-template<typename T>
-T ABS<T>::peek() const {
-    if (curr_size_ == 0) throw std::out_of_range("Stack is empty");
-    return array_[curr_size_ - 1];
-}
-
-template<typename T>
-size_t ABS<T>::getMaxCapacity() const noexcept { return capacity_; }
-
-template<typename T>
-T* ABS<T>::getData() const noexcept { return array_; }
-
-template<typename T>
-void ABS<T>::resize() {
-    size_t newCapacity = capacity_ * scale_factor_;
-    T* newArray = new T[newCapacity];
-    std::copy(array_, array_ + curr_size_, newArray);
-    delete[] array_;
-    array_ = newArray;
-    capacity_ = newCapacity;
-}
