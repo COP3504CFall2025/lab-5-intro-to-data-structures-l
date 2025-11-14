@@ -32,6 +32,6 @@ public:
     }
 
     void clear() {
-        list.Clear();
+        list.Clear(); // Fixed capitalization
     }
 };
