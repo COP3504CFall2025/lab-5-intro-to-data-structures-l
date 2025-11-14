@@ -50,7 +50,7 @@ private:
     unsigned int count;
 };
 
-// ---------- Constructors ----------
+
 template <typename T>
 LinkedList<T>::LinkedList() : head(nullptr), tail(nullptr), count(0) {}
 
@@ -79,7 +79,7 @@ LinkedList<T>::~LinkedList() {
     Clear();
 }
 
-// ---------- Behaviors ----------
+
 template <typename T>
 void LinkedList<T>::printForward() const {
     Node* curr = head;
@@ -102,7 +102,7 @@ void LinkedList<T>::printReverse() const {
     cout << endl;
 }
 
-// ---------- Accessors ----------
+
 template <typename T>
 unsigned int LinkedList<T>::getCount() const {
     return count;
@@ -128,7 +128,7 @@ const LinkedList<T>::Node* LinkedList<T>::getTail() const {
     return tail;
 }
 
-// ---------- Insertion ----------
+
 template <typename T>
 void LinkedList<T>::addHead(const T& data) {
     Node* node = new Node(data);
@@ -157,7 +157,7 @@ void LinkedList<T>::addTail(const T& data) {
     count++;
 }
 
-// ---------- Removal ----------
+
 template <typename T>
 bool LinkedList<T>::removeHead() {
     if (!head) return false;
@@ -198,7 +198,7 @@ void LinkedList<T>::Clear() {
         removeHead();
 }
 
-// ---------- Operators ----------
+
 template <typename T>
 LinkedList<T>& LinkedList<T>::operator=(LinkedList<T>&& other) noexcept {
     if (this == &other) return *this;
