@@ -1,28 +1,58 @@
 #pragma once
-
 #include "Interfaces.hpp"
-#include "LinkedList.hpp"
-#include <stdlib.h>
+#include <cstddef>
 #include <stdexcept>
 
 template <typename T>
-class LLQ : public QueueInterface<T> {
+class LLQueue : public QueueInterface<T> {
 private:
-    LinkedList<T> list;
+    struct Node {
+        T data;
+        Node* next;
+        Node(const T& item) : data(item), next(nullptr) {}
+    };
+    Node* front_;
+    Node* back_;
+    std::size_t size_;
+
 public:
-    // Constructor
-    LLQ();
+    LLQueue() : front_(nullptr), back_(nullptr), size_(0) {}
+    ~LLQueue() {
+        while (front_) {
+            Node* tmp = front_;
+            front_ = front_->next;
+            delete tmp;
+        }
+    }
 
-    // Insertion
-    void enqueue(const T& item) override;
+    void enqueue(const T& item) override {
+        Node* n = new Node(item);
+        if (!back_) {
+            front_ = back_ = n;
+        } else {
+            back_->next = n;
+            back_ = n;
+        }
+        ++size_;
+    }
 
-    // Deletion
-    T dequeue() override;
+    T dequeue() override {
+        if (!front_) throw std::runtime_error("Queue is empty");
+        Node* tmp = front_;
+        T val = front_->data;
+        front_ = front_->next;
+        if (!front_) back_ = nullptr;
+        delete tmp;
+        --size_;
+        return val;
+    }
 
-    // Access
-    T peek() const override;
+    T peek() const override {
+        if (!front_) throw std::runtime_error("Queue is empty");
+        return front_->data;
+    }
 
-    // Getter
-    std::size_t getSize() const noexcept override;
-
+    std::size_t getSize() const noexcept override {
+        return size_;
+    }
 };
