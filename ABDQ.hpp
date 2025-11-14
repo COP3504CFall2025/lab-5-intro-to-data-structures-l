@@ -102,18 +102,19 @@ public:
         ++size_;
     }
 
-    void popFront() override {
-        if (isEmpty())
-            throw std::runtime_error("Deque empty");
+    T popFront() override {
+        if (isEmpty()) throw std::runtime_error("Deque empty");
+        T value = data_[front_];
         front_ = (front_ + 1) % capacity_;
         --size_;
+        return value;
     }
 
-    void popBack() override {
-        if (isEmpty())
-            throw std::runtime_error("Deque empty");
+    T popBack() override {
+        if (isEmpty()) throw std::runtime_error("Deque empty");
         back_ = (back_ + capacity_ - 1) % capacity_;
         --size_;
+        return data_[back_];
     }
 
     T& front() override {
