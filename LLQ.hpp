@@ -1,58 +1,44 @@
 #pragma once
 #include "Interfaces.hpp"
-#include <cstddef>
-#include <stdexcept>
 
 template <typename T>
-class LLQueue : public QueueInterface<T> {
+class LLQ : public QueueInterface<T> {
 private:
     struct Node {
         T data;
         Node* next;
-        Node(const T& item) : data(item), next(nullptr) {}
+        Node(const T& d, Node* n = nullptr) : data(d), next(n) {}
     };
-    Node* front_;
-    Node* back_;
-    std::size_t size_;
+    Node* head;
+    Node* tail;
+    std::size_t size;
 
 public:
-    LLQueue() : front_(nullptr), back_(nullptr), size_(0) {}
-    ~LLQueue() {
-        while (front_) {
-            Node* tmp = front_;
-            front_ = front_->next;
-            delete tmp;
-        }
-    }
+    LLQ() : head(nullptr), tail(nullptr), size(0) {}
+    ~LLQ() { while (!isEmpty()) dequeue(); }
 
     void enqueue(const T& item) override {
-        Node* n = new Node(item);
-        if (!back_) {
-            front_ = back_ = n;
-        } else {
-            back_->next = n;
-            back_ = n;
-        }
-        ++size_;
+        Node* newNode = new Node(item);
+        if (tail) tail->next = newNode;
+        tail = newNode;
+        if (!head) head = tail;
+        ++size;
     }
 
-    T dequeue() override {
-        if (!front_) throw std::runtime_error("Queue is empty");
-        Node* tmp = front_;
-        T val = front_->data;
-        front_ = front_->next;
-        if (!front_) back_ = nullptr;
-        delete tmp;
-        --size_;
-        return val;
+    void dequeue() override {
+        if (isEmpty()) throw std::runtime_error("Queue is empty");
+        Node* temp = head;
+        head = head->next;
+        if (!head) tail = nullptr;
+        delete temp;
+        --size;
     }
 
-    T peek() const override {
-        if (!front_) throw std::runtime_error("Queue is empty");
-        return front_->data;
+    T& peek() override {
+        if (isEmpty()) throw std::runtime_error("Queue is empty");
+        return head->data;
     }
 
-    std::size_t getSize() const noexcept override {
-        return size_;
-    }
+    std::size_t getSize() const override { return size; }
+    bool isEmpty() const override { return size == 0; }
 };

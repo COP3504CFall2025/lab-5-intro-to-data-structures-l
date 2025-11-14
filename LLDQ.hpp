@@ -1,84 +1,71 @@
 #pragma once
 #include "Interfaces.hpp"
-#include <cstddef>
-#include <stdexcept>
 
 template <typename T>
-class LLDeque : public DequeInterface<T> {
+class LLDQ : public DequeInterface<T> {
 private:
     struct Node {
         T data;
-        Node* prev;
         Node* next;
-        Node(const T& item) : data(item), prev(nullptr), next(nullptr) {}
+        Node* prev;
+        Node(const T& d) : data(d), next(nullptr), prev(nullptr) {}
     };
-    Node* front_;
-    Node* back_;
-    std::size_t size_;
+    Node* head;
+    Node* tail;
+    std::size_t size;
 
 public:
-    LLDeque() : front_(nullptr), back_(nullptr), size_(0) {}
-    ~LLDeque() {
-        while (front_) {
-            Node* tmp = front_;
-            front_ = front_->next;
-            delete tmp;
-        }
-    }
+    LLDQ() : head(nullptr), tail(nullptr), size(0) {}
+    ~LLDQ() { while (!isEmpty()) popFront(); }
 
     void pushFront(const T& item) override {
-        Node* n = new Node(item);
-        n->next = front_;
-        if (front_) front_->prev = n;
-        front_ = n;
-        if (!back_) back_ = n;
-        ++size_;
+        Node* newNode = new Node(item);
+        newNode->next = head;
+        if (head) head->prev = newNode;
+        head = newNode;
+        if (!tail) tail = head;
+        ++size;
     }
 
     void pushBack(const T& item) override {
-        Node* n = new Node(item);
-        n->prev = back_;
-        if (back_) back_->next = n;
-        back_ = n;
-        if (!front_) front_ = n;
-        ++size_;
+        Node* newNode = new Node(item);
+        newNode->prev = tail;
+        if (tail) tail->next = newNode;
+        tail = newNode;
+        if (!head) head = tail;
+        ++size;
     }
 
-    T popFront() override {
-        if (!front_) throw std::runtime_error("Deque is empty");
-        Node* tmp = front_;
-        T val = tmp->data;
-        front_ = front_->next;
-        if (front_) front_->prev = nullptr;
-        else back_ = nullptr;
-        delete tmp;
-        --size_;
-        return val;
+    void popFront() override {
+        if (isEmpty()) throw std::runtime_error("Deque is empty");
+        Node* temp = head;
+        head = head->next;
+        if (head) head->prev = nullptr;
+        else tail = nullptr;
+        delete temp;
+        --size;
     }
 
-    T popBack() override {
-        if (!back_) throw std::runtime_error("Deque is empty");
-        Node* tmp = back_;
-        T val = tmp->data;
-        back_ = back_->prev;
-        if (back_) back_->next = nullptr;
-        else front_ = nullptr;
-        delete tmp;
-        --size_;
-        return val;
+    void popBack() override {
+        if (isEmpty()) throw std::runtime_error("Deque is empty");
+        Node* temp = tail;
+        tail = tail->prev;
+        if (tail) tail->next = nullptr;
+        else head = nullptr;
+        delete temp;
+        --size;
     }
 
-    const T& front() const override {
-        if (!front_) throw std::runtime_error("Deque is empty");
-        return front_->data;
+    T& front() override {
+        if (isEmpty()) throw std::runtime_error("Deque is empty");
+        return head->data;
     }
 
-    const T& back() const override {
-        if (!back_) throw std::runtime_error("Deque is empty");
-        return back_->data;
+    T& back() override {
+        if (isEmpty()) throw std::runtime_error("Deque is empty");
+        return tail->data;
     }
 
-    std::size_t getSize() const noexcept override {
-        return size_;
-    }
+    std::size_t getSize() const override { return size; }
+    bool isEmpty() const override { return size == 0; }
 };

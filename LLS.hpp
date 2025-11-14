@@ -1,50 +1,39 @@
 #pragma once
 #include "Interfaces.hpp"
-#include <cstddef>
-#include <stdexcept>
 
 template <typename T>
-class LLStack : public StackInterface<T> {
+class LLS : public StackInterface<T> {
 private:
     struct Node {
         T data;
         Node* next;
-        Node(const T& item, Node* n = nullptr) : data(item), next(n) {}
+        Node(const T& d, Node* n = nullptr) : data(d), next(n) {}
     };
-    Node* head_;
-    std::size_t size_;
+    Node* head;
+    std::size_t size;
 
 public:
-    LLStack() : head_(nullptr), size_(0) {}
-    ~LLStack() {
-        while (head_) {
-            Node* tmp = head_;
-            head_ = head_->next;
-            delete tmp;
-        }
-    }
+    LLS() : head(nullptr), size(0) {}
+    ~LLS() { while (!isEmpty()) pop(); }
 
     void push(const T& item) override {
-        head_ = new Node(item, head_);
-        ++size_;
+        head = new Node(item, head);
+        ++size;
     }
 
-    T pop() override {
-        if (!head_) throw std::runtime_error("Stack is empty");
-        Node* tmp = head_;
-        T val = head_->data;
-        head_ = head_->next;
-        delete tmp;
-        --size_;
-        return val;
+    void pop() override {
+        if (isEmpty()) throw std::runtime_error("Stack is empty");
+        Node* temp = head;
+        head = head->next;
+        delete temp;
+        --size;
     }
 
-    T peek() const override {
-        if (!head_) throw std::runtime_error("Stack is empty");
-        return head_->data;
+    T& peek() override {
+        if (isEmpty()) throw std::runtime_error("Stack is empty");
+        return head->data;
     }
 
-    std::size_t getSize() const noexcept override {
-        return size_;
-    }
+    std::size_t getSize() const override { return size; }
+    bool isEmpty() const override { return size == 0; }
 };
