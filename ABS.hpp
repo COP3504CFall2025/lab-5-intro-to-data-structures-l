@@ -84,4 +84,13 @@ public:
     }
 
     T& peek() override {
-        if (curr_size_ == 0) throw std::runtime_error("Stack e_
+        if (curr_size_ == 0) throw std::runtime_error("Stack empty");
+        return array_[curr_size_ - 1];
+    }
+
+    std::size_t getSize() const override { return curr_size_; }
+
+    bool isEmpty() const override { return curr_size_ == 0; }
+
+    std::size_t getMaxCapacity() const { return capacity_; }
+};
