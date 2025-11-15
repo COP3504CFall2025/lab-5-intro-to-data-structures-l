@@ -1,140 +1,136 @@
 #pragma once
 #include <cstddef>
 #include <stdexcept>
+#include <iostream>
 
 template <typename T>
 class LinkedList {
-private:
+public:
     struct Node {
         T data;
-        Node* next;
         Node* prev;
-        Node(const T& d) : data(d), next(nullptr), prev(nullptr) {}
+        Node* next;
+        Node(const T& value) : data(value), prev(nullptr), next(nullptr) {}
     };
 
-    Node* head_;
-    Node* tail_;
-    std::size_t size_;
+private:
+    Node* head;
+    Node* tail;
+    unsigned int count;
 
 public:
+    LinkedList() : head(nullptr), tail(nullptr), count(0) {}
+    ~LinkedList() { Clear(); }
 
-    LinkedList() : head_(nullptr), tail_(nullptr), size_(0) {}
-
-
-    ~LinkedList() {
-        Clear();
-    }
-
-
-    LinkedList(const LinkedList& other) : head_(nullptr), tail_(nullptr), size_(0) {
-        Node* curr = other.head_;
-        while (curr) {
-            AddBack(curr->data);
-            curr = curr->next;
+    LinkedList(const LinkedList& other) : head(nullptr), tail(nullptr), count(0) {
+        Node* current = other.head;
+        while (current) {
+            AddTail(current->data);
+            current = current->next;
         }
     }
 
-
     LinkedList(LinkedList&& other) noexcept
-        : head_(other.head_), tail_(other.tail_), size_(other.size_) {
-        other.head_ = nullptr;
-        other.tail_ = nullptr;
-        other.size_ = 0;
+        : head(other.head), tail(other.tail), count(other.count) {
+        other.head = nullptr;
+        other.tail = nullptr;
+        other.count = 0;
     }
-
 
     LinkedList& operator=(const LinkedList& other) {
         if (this != &other) {
             Clear();
-            Node* curr = other.head_;
-            while (curr) {
-                AddBack(curr->data);
-                curr = curr->next;
+            Node* current = other.head;
+            while (current) {
+                AddTail(current->data);
+                current = current->next;
             }
         }
         return *this;
     }
 
-
     LinkedList& operator=(LinkedList&& other) noexcept {
         if (this != &other) {
             Clear();
-            head_ = other.head_;
-            tail_ = other.tail_;
-            size_ = other.size_;
-            other.head_ = nullptr;
-            other.tail_ = nullptr;
-            other.size_ = 0;
+            head = other.head;
+            tail = other.tail;
+            count = other.count;
+            other.head = nullptr;
+            other.tail = nullptr;
+            other.count = 0;
         }
         return *this;
     }
 
-
-    void AddFront(const T& value) {
+    void AddHead(const T& value) {
         Node* node = new Node(value);
-        node->next = head_;
-        if (head_) head_->prev = node;
-        head_ = node;
-        if (!tail_) tail_ = node;
-        ++size_;
+        node->next = head;
+        if (head) head->prev = node;
+        head = node;
+        if (!tail) tail = node;
+        ++count;
     }
-    void AddBack(const T& value) {
+
+    void AddTail(const T& value) {
         Node* node = new Node(value);
-        node->prev = tail_;
-        if (tail_) tail_->next = node;
-        tail_ = node;
-        if (!head_) head_ = node;
-        ++size_;
+        node->prev = tail;
+        if (tail) tail->next = node;
+        tail = node;
+        if (!head) head = node;
+        ++count;
     }
 
-
-    void RemoveFront() {
-        if (!head_) throw std::runtime_error("List is empty");
-        Node* tmp = head_;
-        head_ = head_->next;
-        if (head_) head_->prev = nullptr;
-        else tail_ = nullptr;
+    void RemoveHead() {
+        if (!head) throw std::runtime_error("List is empty");
+        Node* tmp = head;
+        head = head->next;
+        if (head) head->prev = nullptr;
+        else tail = nullptr;
         delete tmp;
-        --size_;
+        --count;
     }
 
-
-    void RemoveBack() {
-        if (!tail_) throw std::runtime_error("List is empty");
-        Node* tmp = tail_;
-        tail_ = tail_->prev;
-        if (tail_) tail_->next = nullptr;
-        else head_ = nullptr;
+    void RemoveTail() {
+        if (!tail) throw std::runtime_error("List is empty");
+        Node* tmp = tail;
+        tail = tail->prev;
+        if (tail) tail->next = nullptr;
+        else head = nullptr;
         delete tmp;
-        --size_;
+        --count;
     }
-
-
-    T& Front() {
-        if (!head_) throw std::runtime_error("List is empty");
-        return head_->data;
-    }
-
-
-    T& Back() {
-        if (!tail_) throw std::runtime_error("List is empty");
-        return tail_->data;
-    }
-
 
     void Clear() {
-        while (head_) {
-            Node* tmp = head_;
-            head_ = head_->next;
+        Node* current = head;
+        while (current) {
+            Node* tmp = current;
+            current = current->next;
             delete tmp;
         }
-        tail_ = nullptr;
-        size_ = 0;
+        head = nullptr;
+        tail = nullptr;
+        count = 0;
     }
 
+    unsigned int getCount() const { return count; }
+    Node* getHead() const { return head; }
+    Node* getTail() const { return tail; }
 
-    std::size_t Size() const { return size_; }
+    void PrintForward() const {
+        Node* curr = head;
+        while (curr) {
+            std::cout << curr->data << " ";
+            curr = curr->next;
+        }
+        std::cout << "\n";
+    }
 
-
-    bool IsEmpty() const { return size_ == 0; }
+    void PrintReverse() const {
+        Node* curr = tail;
+        while (curr) {
+            std::cout << curr->data << " ";
+            curr = curr->prev;
+        }
+        std::cout << "\n";
+    }
 };
