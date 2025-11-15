@@ -20,12 +20,12 @@ private:
 
 public:
     LinkedList() : head(nullptr), tail(nullptr), count(0) {}
-    ~LinkedList() { Clear(); }
+    ~LinkedList() { clear(); }
 
     LinkedList(const LinkedList& other) : head(nullptr), tail(nullptr), count(0) {
         Node* current = other.head;
         while (current) {
-            AddTail(current->data);
+            addTail(current->data);
             current = current->next;
         }
     }
@@ -39,10 +39,10 @@ public:
 
     LinkedList& operator=(const LinkedList& other) {
         if (this != &other) {
-            Clear();
+            clear();
             Node* current = other.head;
             while (current) {
-                AddTail(current->data);
+                addTail(current->data);
                 current = current->next;
             }
         }
@@ -51,7 +51,7 @@ public:
 
     LinkedList& operator=(LinkedList&& other) noexcept {
         if (this != &other) {
-            Clear();
+            clear();
             head = other.head;
             tail = other.tail;
             count = other.count;
@@ -62,7 +62,7 @@ public:
         return *this;
     }
 
-    void AddHead(const T& value) {
+    void addHead(const T& value) {
         Node* node = new Node(value);
         node->next = head;
         if (head) head->prev = node;
@@ -71,7 +71,7 @@ public:
         ++count;
     }
 
-    void AddTail(const T& value) {
+    void addTail(const T& value) {
         Node* node = new Node(value);
         node->prev = tail;
         if (tail) tail->next = node;
@@ -80,27 +80,29 @@ public:
         ++count;
     }
 
-    void RemoveHead() {
-        if (!head) throw std::runtime_error("List is empty");
+    bool removeHead() {
+        if (!head) return false;
         Node* tmp = head;
         head = head->next;
         if (head) head->prev = nullptr;
         else tail = nullptr;
         delete tmp;
         --count;
+        return true;
     }
 
-    void RemoveTail() {
-        if (!tail) throw std::runtime_error("List is empty");
+    bool removeTail() {
+        if (!tail) return false;
         Node* tmp = tail;
         tail = tail->prev;
         if (tail) tail->next = nullptr;
         else head = nullptr;
         delete tmp;
         --count;
+        return true;
     }
 
-    void Clear() {
+    void clear() {
         Node* current = head;
         while (current) {
             Node* tmp = current;
@@ -116,7 +118,7 @@ public:
     Node* getHead() const { return head; }
     Node* getTail() const { return tail; }
 
-    void PrintForward() const {
+    void printForward() const {
         Node* curr = head;
         while (curr) {
             std::cout << curr->data << " ";
@@ -125,7 +127,7 @@ public:
         std::cout << "\n";
     }
 
-    void PrintReverse() const {
+    void printReverse() const {
         Node* curr = tail;
         while (curr) {
             std::cout << curr->data << " ";
