@@ -1,237 +1,140 @@
 #pragma once
-#include <iostream>
-using namespace std;
+#include <cstddef>
+#include <stdexcept>
 
 template <typename T>
-class LinkedList
-{
-public:
+class LinkedList {
+private:
     struct Node {
         T data;
-        Node* prev;
         Node* next;
-
-        Node(const T& d) : data(d), prev(nullptr), next(nullptr) {}
+        Node* prev;
+        Node(const T& d) : data(d), next(nullptr), prev(nullptr) {}
     };
 
-    // Behaviors
-    void printForward() const;
-    void printReverse() const;
+    Node* head_;
+    Node* tail_;
+    std::size_t size_;
 
-    // Accessors
-    [[nodiscard]] unsigned int getCount() const;
-    Node* getHead();
-    const Node* getHead() const;
-    Node* getTail();
-    const Node* getTail() const;
+public:
 
-    // Insertion
-    void addHead(const T& data);
-    void addTail(const T& data);
+    LinkedList() : head_(nullptr), tail_(nullptr), size_(0) {}
 
-    // Removal
-    bool removeHead();
-    bool removeTail();
-    void Clear();
 
-    // Operators
-    LinkedList<T>& operator=(LinkedList<T>&& other) noexcept;
-    LinkedList<T>& operator=(const LinkedList<T>& rhs);
+    ~LinkedList() {
+        Clear();
+    }
 
-    // Construction/Destruction
-    LinkedList();
-    LinkedList(const LinkedList<T>& list);
-    LinkedList(LinkedList<T>&& other) noexcept;
-    ~LinkedList();
 
-private:
-    Node* head;
-    Node* tail;
-    unsigned int count;
+    LinkedList(const LinkedList& other) : head_(nullptr), tail_(nullptr), size_(0) {
+        Node* curr = other.head_;
+        while (curr) {
+            AddBack(curr->data);
+            curr = curr->next;
+        }
+    }
+
+
+    LinkedList(LinkedList&& other) noexcept
+        : head_(other.head_), tail_(other.tail_), size_(other.size_) {
+        other.head_ = nullptr;
+        other.tail_ = nullptr;
+        other.size_ = 0;
+    }
+
+
+    LinkedList& operator=(const LinkedList& other) {
+        if (this != &other) {
+            Clear();
+            Node* curr = other.head_;
+            while (curr) {
+                AddBack(curr->data);
+                curr = curr->next;
+            }
+        }
+        return *this;
+    }
+
+
+    LinkedList& operator=(LinkedList&& other) noexcept {
+        if (this != &other) {
+            Clear();
+            head_ = other.head_;
+            tail_ = other.tail_;
+            size_ = other.size_;
+            other.head_ = nullptr;
+            other.tail_ = nullptr;
+            other.size_ = 0;
+        }
+        return *this;
+    }
+
+
+    void AddFront(const T& value) {
+        Node* node = new Node(value);
+        node->next = head_;
+        if (head_) head_->prev = node;
+        head_ = node;
+        if (!tail_) tail_ = node;
+        ++size_;
+    }
+    void AddBack(const T& value) {
+        Node* node = new Node(value);
+        node->prev = tail_;
+        if (tail_) tail_->next = node;
+        tail_ = node;
+        if (!head_) head_ = node;
+        ++size_;
+    }
+
+
+    void RemoveFront() {
+        if (!head_) throw std::runtime_error("List is empty");
+        Node* tmp = head_;
+        head_ = head_->next;
+        if (head_) head_->prev = nullptr;
+        else tail_ = nullptr;
+        delete tmp;
+        --size_;
+    }
+
+
+    void RemoveBack() {
+        if (!tail_) throw std::runtime_error("List is empty");
+        Node* tmp = tail_;
+        tail_ = tail_->prev;
+        if (tail_) tail_->next = nullptr;
+        else head_ = nullptr;
+        delete tmp;
+        --size_;
+    }
+
+
+    T& Front() {
+        if (!head_) throw std::runtime_error("List is empty");
+        return head_->data;
+    }
+
+
+    T& Back() {
+        if (!tail_) throw std::runtime_error("List is empty");
+        return tail_->data;
+    }
+
+
+    void Clear() {
+        while (head_) {
+            Node* tmp = head_;
+            head_ = head_->next;
+            delete tmp;
+        }
+        tail_ = nullptr;
+        size_ = 0;
+    }
+
+
+    std::size_t Size() const { return size_; }
+
+
+    bool IsEmpty() const { return size_ == 0; }
 };
-
-
-template <typename T>
-LinkedList<T>::LinkedList() : head(nullptr), tail(nullptr), count(0) {}
-
-template <typename T>
-LinkedList<T>::LinkedList(const LinkedList<T>& list)
-    : head(nullptr), tail(nullptr), count(0)
-{
-    Node* curr = list.head;
-    while (curr) {
-        addTail(curr->data);
-        curr = curr->next;
-    }
-}
-
-template <typename T>
-LinkedList<T>::LinkedList(LinkedList<T>&& other) noexcept
-    : head(other.head), tail(other.tail), count(other.count)
-{
-    other.head = nullptr;
-    other.tail = nullptr;
-    other.count = 0;
-}
-
-template <typename T>
-LinkedList<T>::~LinkedList() {
-    Clear();
-}
-
-
-template <typename T>
-void LinkedList<T>::printForward() const {
-    Node* curr = head;
-    while (curr) {
-        cout << curr->data;
-        if (curr->next) cout << " ";
-        curr = curr->next;
-    }
-    cout << endl;
-}
-
-template <typename T>
-void LinkedList<T>::printReverse() const {
-    Node* curr = tail;
-    while (curr) {
-        cout << curr->data;
-        if (curr->prev) cout << " ";
-        curr = curr->prev;
-    }
-    cout << endl;
-}
-
-
-template <typename T>
-unsigned int LinkedList<T>::getCount() const {
-    return count;
-}
-
-template <typename T>
- LinkedList<T>::Node* LinkedList<T>::getHead() {
-    return head;
-}
-
-template <typename T>
-const LinkedList<T>::Node* LinkedList<T>::getHead() const {
-    return head;
-}
-
-template <typename T>
- LinkedList<T>::Node* LinkedList<T>::getTail() {
-    return tail;
-}
-
-template <typename T>
-const LinkedList<T>::Node* LinkedList<T>::getTail() const {
-    return tail;
-}
-
-
-template <typename T>
-void LinkedList<T>::addHead(const T& data) {
-    Node* node = new Node(data);
-    node->next = head;
-
-    if (head)
-        head->prev = node;
-    else
-        tail = node;
-
-    head = node;
-    count++;
-}
-
-template <typename T>
-void LinkedList<T>::addTail(const T& data) {
-    Node* node = new Node(data);
-    node->prev = tail;
-
-    if (tail)
-        tail->next = node;
-    else
-        head = node;
-
-    tail = node;
-    count++;
-}
-
-
-template <typename T>
-bool LinkedList<T>::removeHead() {
-    if (!head) return false;
-
-    Node* temp = head;
-    head = head->next;
-
-    if (head)
-        head->prev = nullptr;
-    else
-        tail = nullptr;
-
-    delete temp;
-    count--;
-    return true;
-}
-
-template <typename T>
-bool LinkedList<T>::removeTail() {
-    if (!tail) return false;
-
-    Node* temp = tail;
-    tail = tail->prev;
-
-    if (tail)
-        tail->next = nullptr;
-    else
-        head = nullptr;
-
-    delete temp;
-    count--;
-    return true;
-}
-
-template <typename T>
-void LinkedList<T>::Clear() {
-    while (head)
-        removeHead();
-}
-
-explicit ABDQ(std::size_t capacity)
-    : data_(new T[capacity > 0 ? capacity : 1]),
-      capacity_(capacity > 0 ? capacity : 1),
-      size_(0),
-      front_(0),
-      back_(0) {}
-template <typename T>
-LinkedList<T>& LinkedList<T>::operator=(LinkedList<T>&& other) noexcept {
-    if (this == &other) return *this;
-
-    Clear();
-
-    head = other.head;
-    tail = other.tail;
-    count = other.count;
-
-    other.head = nullptr;
-    other.tail = nullptr;
-    other.count = 0;
-
-    return *this;
-}
-
-template <typename T>
-LinkedList<T>& LinkedList<T>::operator=(const LinkedList<T>& rhs) {
-    if (this == &rhs) return *this;
-
-    Clear();
-
-    Node* curr = rhs.head;
-    while (curr) {
-        addTail(curr->data);
-        curr = curr->next;
-    }
-
-    return *this;
-}
