@@ -1,39 +1,35 @@
-// ABS.hpp
 #pragma once
 #include "Interfaces.hpp"
 #include <stdexcept>
+#include <vector>
 
 template <typename T>
 class ABS : public StackInterface<T> {
 private:
-    T* arr;
-    int topIndex;
-    int capacity;
+    std::vector<T> data;
 
 public:
-    ABS(int cap = 1) : arr(new T[cap]), topIndex(-1), capacity(cap) {}
-    ~ABS() { delete[] arr; }
+    ABS(std::size_t capacity = 10) {
+        data.reserve(capacity);
+    }
 
     void push(const T& element) override {
-        if (topIndex + 1 >= capacity) throw std::runtime_error("Stack overflow");
-        arr[++topIndex] = element;
+        data.push_back(element);
     }
 
     T pop() override {
-        if (topIndex < 0) throw std::runtime_error("Stack underflow");
-        return arr[topIndex--];
+        if (data.empty()) throw std::runtime_error("Stack is empty");
+        T value = data.back();
+        data.pop_back();
+        return value;
     }
 
-    T& peek() override {
-        if (topIndex < 0) throw std::runtime_error("Stack is empty");
-        return arr[topIndex];
+    T peek() const override {
+        if (data.empty()) throw std::runtime_error("Stack is empty");
+        return data.back();
     }
 
-    int getMaxCapacity() const {
-        return capacity;
-    }
-
-    bool isEmpty() const {
-        return topIndex < 0;
+    std::size_t getSize() const override {
+        return data.size();
     }
 };

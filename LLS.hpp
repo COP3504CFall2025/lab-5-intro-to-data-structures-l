@@ -1,4 +1,3 @@
-// LLS.hpp
 #pragma once
 #include "Interfaces.hpp"
 #include <stdexcept>
@@ -12,10 +11,10 @@ private:
         Node(const T& d, Node* n = nullptr) : data(d), next(n) {}
     };
     Node* head;
-    int capacity;
+    std::size_t currentSize;
 
 public:
-    LLS(int cap = 1) : head(nullptr), capacity(cap) {}
+    LLS() : head(nullptr), currentSize(0) {}
     ~LLS() {
         while (head) {
             Node* tmp = head;
@@ -26,6 +25,7 @@ public:
 
     void push(const T& element) override {
         head = new Node(element, head);
+        currentSize++;
     }
 
     T pop() override {
@@ -34,19 +34,16 @@ public:
         T value = tmp->data;
         head = head->next;
         delete tmp;
+        currentSize--;
         return value;
     }
 
-    T& peek() override {
+    T peek() const override {
         if (!head) throw std::runtime_error("Stack is empty");
         return head->data;
     }
 
-    int getMaxCapacity() const {
-        return capacity;
-    }
-
-    bool isEmpty() const {
-        return head == nullptr;
+    std::size_t getSize() const override {
+        return currentSize;
     }
 };

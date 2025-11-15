@@ -1,46 +1,40 @@
-// ABQ.hpp
 #pragma once
 #include "Interfaces.hpp"
 #include <stdexcept>
+#include <vector>
 
 template <typename T>
 class ABQ : public QueueInterface<T> {
 private:
-    T* arr;
-    int frontIndex;
-    int rearIndex;
-    int size;
-    int capacity;
+    std::vector<T> data;
+    std::size_t frontIndex;
+    std::size_t size;
+    std::size_t capacity;
 
 public:
-    ABQ(int cap = 1) : arr(new T[cap]), frontIndex(0), rearIndex(-1), size(0), capacity(cap) {}
-    ~ABQ() { delete[] arr; }
+    ABQ(std::size_t cap = 10) : data(cap), frontIndex(0), size(0), capacity(cap) {}
 
-    void enqueue(const T& element) override {
-        if (size >= capacity) throw std::runtime_error("Queue overflow");
-        rearIndex = (rearIndex + 1) % capacity;
-        arr[rearIndex] = element;
-        ++size;
+    void enqueue(const T& element) {
+        if (size == capacity) throw std::runtime_error("Queue overflow");
+        std::size_t idx = (frontIndex + size) % capacity;
+        data[idx] = element;
+        size++;
     }
 
-    T pop() override {  // This is dequeue
-        if (size <= 0) throw std::runtime_error("Queue underflow");
-        T value = arr[frontIndex];
+    T dequeue() override {  // required by interface
+        if (size == 0) throw std::runtime_error("Queue underflow");
+        T value = data[frontIndex];
         frontIndex = (frontIndex + 1) % capacity;
-        --size;
+        size--;
         return value;
     }
 
-    T& peek() override {
-        if (size <= 0) throw std::runtime_error("Queue is empty");
-        return arr[frontIndex];
+    T peek() const {
+        if (size == 0) throw std::runtime_error("Queue is empty");
+        return data[frontIndex];
     }
 
-    int getMaxCapacity() const {
-        return capacity;
-    }
-
-    bool isEmpty() const {
-        return size == 0;
+    std::size_t getSize() const override {
+        return size;
     }
 };
