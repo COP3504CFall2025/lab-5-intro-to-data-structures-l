@@ -11,33 +11,58 @@ private:
 public:
     LLDQ() = default;
 
-    // Interface methods
+    LLDQ(const LLDQ& other) : list(other.list) {}
+
+    LLDQ(LLDQ&& other) noexcept : list(std::move(other.list)) {}
+
+    LLDQ& operator=(const LLDQ& other) {
+        if (this != &other) {
+            list = other.list;
+        }
+        return *this;
+    }
+
+    LLDQ& operator=(LLDQ&& other) noexcept {
+        if (this != &other) {
+            list = std::move(other.list);
+        }
+        return *this;
+    }
+
     void pushFront(const T& item) override {
-        list.addHead(item);
+        list.AddHead(item);
     }
 
     void pushBack(const T& item) override {
-        list.addTail(item);
+        list.AddTail(item);
     }
 
-    void popFront() override {
-        if (isEmpty()) throw std::runtime_error("Deque is empty");
-        list.removeHead();
+    T popFront() override {
+        if (list.isEmpty()) throw std::runtime_error("Deque empty");
+        T value = list.getHead()->data;
+        list.RemoveHead();
+        return value;
     }
 
-    void popBack() override {
-        if (isEmpty()) throw std::runtime_error("Deque is empty");
-        list.removeTail();
+    T popBack() override {
+        if (list.isEmpty()) throw std::runtime_error("Deque empty");
+        T value = list.getTail()->data;
+        list.RemoveTail();
+        return value;
     }
 
     T& front() override {
-        if (isEmpty()) throw std::runtime_error("Deque is empty");
+        if (list.isEmpty()) throw std::runtime_error("Deque empty");
         return list.getHead()->data;
     }
 
     T& back() override {
-        if (isEmpty()) throw std::runtime_error("Deque is empty");
+        if (list.isEmpty()) throw std::runtime_error("Deque empty");
         return list.getTail()->data;
+    }
+
+    std::size_t getSize() const override {
+        return list.getCount();
     }
 
     bool isEmpty() const override {
