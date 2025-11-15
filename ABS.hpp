@@ -21,19 +21,16 @@ private:
     }
 
 public:
-    // Default constructor
     ABS() : capacity_(1), initial_capacity_(1), curr_size_(0) {
         array_ = new T[capacity_];
     }
 
-    // Constructor with initial capacity
     ABS(std::size_t initialCapacity)
         : capacity_(initialCapacity), initial_capacity_(initialCapacity), curr_size_(0) {
         if (capacity_ == 0) capacity_ = initial_capacity_ = 1;
         array_ = new T[capacity_];
     }
 
-    // Copy constructor
     ABS(const ABS& other)
         : capacity_(other.capacity_), initial_capacity_(other.initial_capacity_),
           curr_size_(other.curr_size_) {
@@ -43,7 +40,6 @@ public:
         }
     }
 
-    // Move constructor
     ABS(ABS&& other) noexcept
         : array_(other.array_), capacity_(other.capacity_),
           initial_capacity_(other.initial_capacity_), curr_size_(other.curr_size_) {
@@ -52,7 +48,6 @@ public:
         other.curr_size_ = 0;
     }
 
-    // Copy assignment
     ABS& operator=(const ABS& other) {
         if (this != &other) {
             delete[] array_;
@@ -67,7 +62,6 @@ public:
         return *this;
     }
 
-    // Move assignment
     ABS& operator=(ABS&& other) noexcept {
         if (this != &other) {
             delete[] array_;
@@ -103,6 +97,8 @@ public:
         return array_[curr_size_ - 1];
     }
 
-    std::size_t size() const { return curr_size_; }
     std::size_t getMaxCapacity() const { return capacity_; }
+
+    // ✅ Add this to pass the test
+    std::size_t getSize() const { return curr_size_; }
 };
