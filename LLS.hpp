@@ -1,5 +1,7 @@
+// LLS.hpp
 #pragma once
 #include "Interfaces.hpp"
+#include <stdexcept>
 
 template <typename T>
 class LLS : public StackInterface<T> {
@@ -10,30 +12,41 @@ private:
         Node(const T& d, Node* n = nullptr) : data(d), next(n) {}
     };
     Node* head;
-    std::size_t size;
+    int capacity;
 
 public:
-    LLS() : head(nullptr), size(0) {}
-    ~LLS() { while (!isEmpty()) pop(); }
-
-    void push(const T& item) override {
-        head = new Node(item, head);
-        ++size;
+    LLS(int cap = 1) : head(nullptr), capacity(cap) {}
+    ~LLS() {
+        while (head) {
+            Node* tmp = head;
+            head = head->next;
+            delete tmp;
+        }
     }
 
-    void pop() override {
-        if (isEmpty()) throw std::runtime_error("Stack is empty");
-        Node* temp = head;
+    void push(const T& element) override {
+        head = new Node(element, head);
+    }
+
+    T pop() override {
+        if (!head) throw std::runtime_error("Stack is empty");
+        Node* tmp = head;
+        T value = tmp->data;
         head = head->next;
-        delete temp;
-        --size;
+        delete tmp;
+        return value;
     }
 
     T& peek() override {
-        if (isEmpty()) throw std::runtime_error("Stack is empty");
+        if (!head) throw std::runtime_error("Stack is empty");
         return head->data;
     }
 
-    std::size_t getSize() const override { return size; }
-    bool isEmpty() const override { return size == 0; }
+    int getMaxCapacity() const {
+        return capacity;
+    }
+
+    bool isEmpty() const {
+        return head == nullptr;
+    }
 };
