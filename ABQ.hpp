@@ -3,7 +3,7 @@
 
 #include <cstddef>
 #include <stdexcept>
-#include "QueueInterface.hpp"
+#include "Interfaces.hpp"
 
 template <typename T>
 class ABQ : public QueueInterface<T> {

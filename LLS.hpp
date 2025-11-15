@@ -3,7 +3,7 @@
 
 #include <cstddef>
 #include <stdexcept>
-#include "StackInterface.hpp"
+#include "Interfaces.hpp"
 
 template <typename T>
 class LLS : public StackInterface<T> {
