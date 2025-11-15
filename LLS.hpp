@@ -1,8 +1,9 @@
-#ifndef LLS_HPP
-#define LLS_HPP
+#pragma once
+
 
 #include <cstddef>
 #include <stdexcept>
+#include <iostream>
 #include "Interfaces.hpp"
 
 template <typename T>
@@ -23,15 +24,18 @@ private:
             curr_size_ = 0;
             return;
         }
-        Node* temp = other.head_;
-        Node* newHead = new Node(temp->data);
-        Node* curr = newHead;
-        temp = temp->next;
-        while (temp) {
-            curr->next = new Node(temp->data);
-            curr = curr->next;
-            temp = temp->next;
+
+        Node* src = other.head_;
+        Node* newHead = new Node(src->data);
+        Node* dst = newHead;
+        src = src->next;
+
+        while (src) {
+            dst->next = new Node(src->data);
+            dst = dst->next;
+            src = src->next;
         }
+
         head_ = newHead;
         curr_size_ = other.curr_size_;
     }
@@ -49,19 +53,21 @@ public:
     }
 
     LLS& operator=(const LLS& other) {
-        if (this == &other) return *this;
-        clear();
-        copyFrom(other);
+        if (this != &other) {
+            clear();
+            copyFrom(other);
+        }
         return *this;
     }
 
     LLS& operator=(LLS&& other) noexcept {
-        if (this == &other) return *this;
-        clear();
-        head_ = other.head_;
-        curr_size_ = other.curr_size_;
-        other.head_ = nullptr;
-        other.curr_size_ = 0;
+        if (this != &other) {
+            clear();
+            head_ = other.head_;
+            curr_size_ = other.curr_size_;
+            other.head_ = nullptr;
+            other.curr_size_ = 0;
+        }
         return *this;
     }
 
@@ -95,7 +101,7 @@ public:
         return val;
     }
 
-    T peek() const override {
+    T& peek() override {
         if (curr_size_ == 0) throw std::runtime_error("Stack empty");
         return head_->data;
     }
@@ -104,19 +110,31 @@ public:
         return curr_size_;
     }
 
+    std::size_t getMaxCapacity() const override {
+        return curr_size_;
+    }
+
+    bool isEmpty() const override {
+        return curr_size_ == 0;
+    }
+
     void PrintForward() const override {
         if (!head_) return;
+
         T* arr = new T[curr_size_];
         Node* curr = head_;
         std::size_t idx = curr_size_;
+
         while (curr) {
             arr[--idx] = curr->data;
             curr = curr->next;
         }
+
         for (std::size_t i = 0; i < curr_size_; i++) {
             std::cout << arr[i];
             if (i + 1 < curr_size_) std::cout << " ";
         }
+
         delete[] arr;
     }
 
@@ -130,4 +148,3 @@ public:
     }
 };
 
-#endif

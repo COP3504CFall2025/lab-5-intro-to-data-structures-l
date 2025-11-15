@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <stdexcept>
+#include <iostream>
 #include "Interfaces.hpp"
 
 template <typename T>
@@ -37,17 +38,22 @@ public:
     }
 
     ABQ(const ABQ& other)
-        : capacity_(other.capacity_), curr_size_(other.curr_size_),
-          front_(other.front_), back_(other.back_) {
+        : capacity_(other.capacity_),
+          curr_size_(other.curr_size_),
+          front_(0),
+          back_(other.curr_size_) {
         array_ = new T[capacity_];
-        for (std::size_t i = 0; i < capacity_; i++) {
-            array_[i] = other.array_[i];
+        for (std::size_t i = 0; i < curr_size_; i++) {
+            array_[i] = other.array_[(other.front_ + i) % other.capacity_];
         }
     }
 
     ABQ(ABQ&& other) noexcept
-        : array_(other.array_), capacity_(other.capacity_), curr_size_(other.curr_size_),
-          front_(other.front_), back_(other.back_) {
+        : array_(other.array_),
+          capacity_(other.capacity_),
+          curr_size_(other.curr_size_),
+          front_(other.front_),
+          back_(other.back_) {
         other.array_ = nullptr;
         other.capacity_ = 0;
         other.curr_size_ = 0;
@@ -60,12 +66,12 @@ public:
             delete[] array_;
             capacity_ = other.capacity_;
             curr_size_ = other.curr_size_;
-            front_ = other.front_;
-            back_ = other.back_;
             array_ = new T[capacity_];
-            for (std::size_t i = 0; i < capacity_; i++) {
-                array_[i] = other.array_[i];
+            for (std::size_t i = 0; i < curr_size_; i++) {
+                array_[i] = other.array_[(other.front_ + i) % other.capacity_];
             }
+            front_ = 0;
+            back_ = curr_size_;
         }
         return *this;
     }
@@ -100,19 +106,29 @@ public:
         curr_size_++;
     }
 
-    void dequeue() override {
+    T dequeue() override {
         if (curr_size_ == 0) throw std::runtime_error("Queue is empty");
+        T value = array_[front_];
         front_ = (front_ + 1) % capacity_;
         curr_size_--;
+        return value;
     }
 
-    T peek() const override {
+    T& peek() override {
         if (curr_size_ == 0) throw std::runtime_error("Queue is empty");
         return array_[front_];
     }
 
     std::size_t getSize() const override {
         return curr_size_;
+    }
+
+    std::size_t getMaxCapacity() const override {
+        return capacity_;
+    }
+
+    bool isEmpty() const override {
+        return curr_size_ == 0;
     }
 
     void PrintForward() const override {
