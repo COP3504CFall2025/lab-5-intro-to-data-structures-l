@@ -12,52 +12,47 @@ public:
     LLDQ() = default;
 
     LLDQ(const LLDQ& other) : list(other.list) {}
-
     LLDQ(LLDQ&& other) noexcept : list(std::move(other.list)) {}
 
     LLDQ& operator=(const LLDQ& other) {
-        if (this != &other) {
-            list = other.list;
-        }
+        if (this != &other) list = other.list;
         return *this;
     }
 
     LLDQ& operator=(LLDQ&& other) noexcept {
-        if (this != &other) {
-            list = std::move(other.list);
-        }
+        if (this != &other) list = std::move(other.list);
         return *this;
     }
 
     void pushFront(const T& item) override {
-        list.AddHead(item);
+        list.addHead(item);
     }
 
     void pushBack(const T& item) override {
-        list.AddTail(item);
+        list.addTail(item);
     }
 
     T popFront() override {
-        if (list.isEmpty()) throw std::runtime_error("Deque empty");
+        if (list.getCount() == 0) throw std::runtime_error("Deque empty");
         T value = list.getHead()->data;
-        list.RemoveHead();
+        list.removeHead();
         return value;
     }
 
     T popBack() override {
-        if (list.isEmpty()) throw std::runtime_error("Deque empty");
+        if (list.getCount() == 0) throw std::runtime_error("Deque empty");
         T value = list.getTail()->data;
-        list.RemoveTail();
+        list.removeTail();
         return value;
     }
 
     T& front() override {
-        if (list.isEmpty()) throw std::runtime_error("Deque empty");
+        if (list.getCount() == 0) throw std::runtime_error("Deque empty");
         return list.getHead()->data;
     }
 
     T& back() override {
-        if (list.isEmpty()) throw std::runtime_error("Deque empty");
+        if (list.getCount() == 0) throw std::runtime_error("Deque empty");
         return list.getTail()->data;
     }
 
@@ -66,6 +61,6 @@ public:
     }
 
     bool isEmpty() const override {
-        return list.isEmpty();
+        return list.getCount() == 0;
     }
 };
