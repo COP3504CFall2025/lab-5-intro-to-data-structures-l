@@ -26,6 +26,14 @@ public:
         array_ = new T[capacity_];
     }
 
+    // Parameterized constructor
+    ABS(std::size_t initCap)
+        : capacity_(initCap), initial_capacity_(initCap), curr_size_(0)
+    {
+        if (initCap == 0) initCap = 1;
+        array_ = new T[capacity_];
+    }
+
     // Destructor
     ~ABS() { delete[] array_; }
 
@@ -74,7 +82,6 @@ public:
         if (curr_size_ == 0) throw std::runtime_error("Stack empty");
         --curr_size_;
         T val = array_[curr_size_];
-
         if (curr_size_ > 0 && curr_size_ <= capacity_ / 4 && capacity_ > initial_capacity_) {
             std::size_t newCap = capacity_ / 2;
             if (newCap < initial_capacity_) newCap = initial_capacity_;
