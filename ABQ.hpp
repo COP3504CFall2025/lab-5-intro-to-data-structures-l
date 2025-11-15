@@ -1,10 +1,9 @@
 #pragma once
-#include <cstddef>
+
 #include <stdexcept>
-#include "Interfaces.hpp"
 
 template <typename T>
-class ABQ : public QueueInterface<T> {
+class ABQ {
 private:
     T* array_;
     std::size_t capacity_;
@@ -13,100 +12,81 @@ private:
     std::size_t rear_;
     std::size_t curr_size_;
 
-    void resize(std::size_t newCap) {
-        T* newArr = new T[newCap];
-        for (std::size_t i = 0; i < curr_size_; ++i)
-            newArr[i] = array_[(front_ + i) % capacity_];
+    void resize(std::size_t newCapacity) {
+        T* newArray = new T[newCapacity];
+        for (std::size_t i = 0; i < curr_size_; ++i) {
+            newArray[i] = array_[(front_ + i) % capacity_];
+        }
         delete[] array_;
-        array_ = newArr;
-        capacity_ = newCap;
+        array_ = newArray;
+        capacity_ = newCapacity;
         front_ = 0;
         rear_ = curr_size_;
     }
 
 public:
-    // Default constructor
     ABQ() : capacity_(1), initial_capacity_(1), front_(0), rear_(0), curr_size_(0) {
         array_ = new T[capacity_];
     }
 
-    // Parameterized constructor
-    ABQ(std::size_t initCap)
-        : capacity_(initCap), initial_capacity_(initCap), front_(0), rear_(0), curr_size_(0)
-    {
-        if (initCap == 0) initCap = 1;
-        array_ = new T[capacity_];
-    }
-
-    // Destructor
-    ~ABQ() { delete[] array_; }
-
-    // Copy constructor
     ABQ(const ABQ& other)
         : capacity_(other.capacity_), initial_capacity_(other.initial_capacity_),
-          front_(other.front_), rear_(other.rear_), curr_size_(other.curr_size_)
-    {
+          front_(other.front_), rear_(other.rear_), curr_size_(other.curr_size_) {
         array_ = new T[capacity_];
-        for (std::size_t i = 0; i < curr_size_; ++i)
+        for (std::size_t i = 0; i < curr_size_; ++i) {
             array_[(front_ + i) % capacity_] = other.array_[(front_ + i) % capacity_];
-    }
-
-    // Move constructor
-    ABQ(ABQ&& other) noexcept
-        : array_(other.array_), capacity_(other.capacity_), initial_capacity_(other.initial_capacity_),
-          front_(other.front_), rear_(other.rear_), curr_size_(other.curr_size_)
-    {
-        other.array_ = nullptr;
-        other.curr_size_ = 0;
-        other.capacity_ = 0;
-    }
-
-    // Move assignment
-    ABQ& operator=(ABQ&& other) noexcept {
-        if (this != &other) {
-            delete[] array_;
-            array_ = other.array_;
-            capacity_ = other.capacity_;
-            initial_capacity_ = other.initial_capacity_;
-            front_ = other.front_;
-            rear_ = other.rear_;
-            curr_size_ = other.curr_size_;
-
-            other.array_ = nullptr;
-            other.curr_size_ = 0;
-            other.capacity_ = 0;
         }
-        return *this;
     }
 
-    void enqueue(const T& item) override {
-        if (curr_size_ == capacity_) resize(capacity_ * 2);
-        array_[rear_] = item;
+    ABQ(ABQ&& other) noexcept
+        : array_(other.array_), capacity_(other.capacity_),
+          initial_capacity_(other.initial_capacity_), front_(other.front_),
+          rear_(other.rear_), curr_size_(other.curr_size_) {
+        other.array_ = nullptr;
+        other.capacity_ = 0;
+        other.curr_size_ = 0;
+    }
+
+    ~ABQ() {
+        delete[] array_;
+    }
+
+    void enqueue(const T& value) {
+        if (curr_size_ == capacity_) {
+            resize(capacity_ * 2);
+        }
+        array_[rear_] = value;
         rear_ = (rear_ + 1) % capacity_;
         ++curr_size_;
     }
 
-    T dequeue() override {
+    T dequeue() {
         if (curr_size_ == 0) throw std::runtime_error("Queue empty");
         T val = array_[front_];
         front_ = (front_ + 1) % capacity_;
         --curr_size_;
+
         if (curr_size_ > 0 && curr_size_ <= capacity_ / 4 && capacity_ > initial_capacity_) {
             std::size_t newCap = capacity_ / 2;
             if (newCap < initial_capacity_) newCap = initial_capacity_;
             resize(newCap);
         }
+
         return val;
     }
 
-    T& peek() override {
+    T peek() const {
         if (curr_size_ == 0) throw std::runtime_error("Queue empty");
         return array_[front_];
     }
 
-    std::size_t getSize() const override { return curr_size_; }
+    std::size_t getSize() const {
+        return curr_size_;
+    }
 
-    bool isEmpty() const override { return curr_size_ == 0; }
-
-    std::size_t getMaxCapacity() const { return capacity_; }
+    std::size_t getMaxCapacity() const {
+        return capacity_;
+    }
 };
+
+
