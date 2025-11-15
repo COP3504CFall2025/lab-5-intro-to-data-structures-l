@@ -1,44 +1,49 @@
 #pragma once
 #include "Interfaces.hpp"
+#include "LinkedList.hpp"
+#include <stdexcept>
 
 template <typename T>
 class LLQ : public QueueInterface<T> {
 private:
-    struct Node {
-        T data;
-        Node* next;
-        Node(const T& d, Node* n = nullptr) : data(d), next(n) {}
-    };
-    Node* head;
-    Node* tail;
-    std::size_t size;
+    LinkedList<T> list;
 
 public:
-    LLQ() : head(nullptr), tail(nullptr), size(0) {}
-    ~LLQ() { while (!isEmpty()) dequeue(); }
+    LLQ() = default;
+    LLQ(const LLQ& other) : list(other.list) {}
+    LLQ(LLQ&& other) noexcept : list(std::move(other.list)) {}
 
-    void enqueue(const T& item) override {
-        Node* newNode = new Node(item);
-        if (tail) tail->next = newNode;
-        tail = newNode;
-        if (!head) head = tail;
-        ++size;
+    LLQ& operator=(const LLQ& other) {
+        if (this != &other) list = other.list;
+        return *this;
     }
 
-    void dequeue() override {
-        if (isEmpty()) throw std::runtime_error("Queue is empty");
-        Node* temp = head;
-        head = head->next;
-        if (!head) tail = nullptr;
-        delete temp;
-        --size;
+    LLQ& operator=(LLQ&& other) noexcept {
+        if (this != &other) list = std::move(other.list);
+        return *this;
+    }
+
+    void enqueue(const T& item) override {
+        list.addTail(item);  // Correct casing
+    }
+
+    T dequeue() override {
+        if (list.getCount() == 0) throw std::runtime_error("Queue empty");
+        T value = list.getHead()->data;
+        list.removeHead();   // Correct casing
+        return value;
     }
 
     T& peek() override {
-        if (isEmpty()) throw std::runtime_error("Queue is empty");
-        return head->data;
+        if (list.getCount() == 0) throw std::runtime_error("Queue empty");
+        return list.getHead()->data;
     }
 
-    std::size_t getSize() const override { return size; }
-    bool isEmpty() const override { return size == 0; }
+    bool isEmpty() const override {
+        return list.getCount() == 0;
+    }
+
+    std::size_t getSize() const override {
+        return list.getCount();
+    }
 };
